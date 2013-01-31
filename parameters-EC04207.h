@@ -43,13 +43,13 @@ void set_parameters(struct output outputs[4])
 
     outputs[2] = (struct output) {
         .current = c50uA,
-        .pwm_duty = 0.5,
+        .pwm_duty = 0.75,
         .mode_count = 0
     };
 
     outputs[3] = (struct output) {
         .current = cDisabled,
-        .pwm_duty = 0.5,
+        .pwm_duty = 0.3,
         .mode_count = 0
     };
 }

@@ -11,14 +11,14 @@
 #include <math.h>
 #include "main.h"
 
+// Uncomment one of the following to set the simulation parameters
+//#include "parameters-subsec.h"
+#include "parameters-EC04207.h"
+
 // Timer interval between timer ticks in seconds
 // based on CPU speed and prescaler
 const double time_increment = 0.01632;
 struct output outputs[4];
-
-// Uncomment one of the following to set the simulation parameters
-#include "parameters-subsec.h"
-//#include "parameters-EC04207.h"
 
 static void set_pwm_duty(uint8_t i, double duty)
 {
