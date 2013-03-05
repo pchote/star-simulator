@@ -57,39 +57,44 @@ int main(void)
     DDRA = 0xFF;
     DDRD = 0xFF;
     set_parameters(outputs);
-    configure_output(0, &OCR3A, &PORTA, 0xF0);
-    configure_output(1, &OCR3B, &PORTA, 0x0F);
+    configure_output(0, &OCR3A, &PORTA, 0x0F);
+    configure_output(1, &OCR3B, &PORTA, 0xF0);
     configure_output(2, &OCR1A, &PORTD, 0xF0);
     configure_output(3, &OCR1B, &PORTD, 0x0F);
 
     // Set the timer tick to 64us
     TCCR0 = _BV(CS02) | _BV(CS01) | _BV(CS00);
     TIMSK |= _BV(TOIE0);
-
     sei();
     for (;;);
 }
 
 ISR(TIMER0_OVF_vect)
 {
+    const double dt = 0.01632;
     for (uint8_t i = 0; i < 4; i++)
     {
-        if (outputs[i].mode_count == 0)
+        struct output *o = &outputs[i];
+        if (o->mode_count == 0)
             continue;
 
         // Increment mode phases
-        for (uint8_t j = 0; j < outputs[i].mode_count; j++)
+        for (uint8_t j = 0; j < o->mode_count; j++)
         {
-            outputs[i].modes[j].phase += 2*M_PI*outputs[i].modes[j].freq*time_increment;
-            while (outputs[i].modes[j].phase > 2*M_PI)
-                outputs[i].modes[j].phase -= 2*M_PI;
+            struct mode *m = &o->modes[j];
+            m->phase += m->freq*dt;
+            while (m->phase > 1)
+                m->phase -= 1;
         }
 
         // Calculate new brightness
         double mma = 0;
-        for (uint8_t j = 0; j < outputs[i].mode_count; j++)
-            mma += outputs[i].modes[j].mma*sin(outputs[i].modes[j].phase);
+        for (uint8_t j = 0; j < o->mode_count; j++)
+        {
+            struct mode *m = &o->modes[j];
+            mma += m->mma*sin(2*M_PI*m->phase);
+        }
 
-        set_pwm_duty(i, (0.001*mma + 1)*outputs[i].pwm_duty);
+        set_pwm_duty(i, (1 + mma/1000)*outputs[i].pwm_duty);
     }
 }
