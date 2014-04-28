@@ -1,5 +1,5 @@
 //*****************************************************************************
-//  Copyright 2012, 2013 Paul Chote
+//  Copyright 2012 - 2014 Paul Chote
 //  This file is part of lightbox, which is free software. It is made available
 //  to you under version 3 (or later) of the GNU General Public License, as
 //  published by the Free Software Foundation and included in the LICENSE file.
@@ -10,15 +10,16 @@
 #include <avr/pgmspace.h>
 #include <math.h>
 #include "main.h"
+#include "cloudgen.h"
 
 // Uncomment one of the following to set the simulation parameters
-//#include "parameters-subsec.h"
-//#include "parameters-EC04207.h"
-#include "parameters-test.h"
+//#include "parameters_testramp.h"
+#include "parameters_photexpt.h"
 
 // Timer interval between timer ticks in seconds
 // based on CPU speed and prescaler
 struct output outputs[4];
+struct cloudparams cloud;
 
 static void set_pwm_duty(uint8_t i, double duty)
 {
@@ -56,11 +57,15 @@ int main(void)
     // Enable outputs
     DDRA = 0xFF;
     DDRD = 0xFF;
-    set_parameters(outputs);
+
+    set_parameters(outputs, &cloud);
     configure_output(0, &OCR3A, &PORTA, 0x0F);
     configure_output(1, &OCR3B, &PORTA, 0xF0);
-    configure_output(2, &OCR1A, &PORTD, 0xF0);
-    configure_output(3, &OCR1B, &PORTD, 0x0F);
+    configure_output(2, &OCR1B, &PORTD, 0x0F);
+    configure_output(3, &OCR1A, &PORTD, 0xF0);
+
+    if (cloud.enabled)
+        cloudgen_init(&cloud);
 
     // Set the timer tick to 64us
     TCCR0 = _BV(CS02) | _BV(CS01) | _BV(CS00);
@@ -72,29 +77,66 @@ int main(void)
 ISR(TIMER0_OVF_vect)
 {
     const double dt = 0.01632;
+
+    // Calculate cloud attenuation
+    double attenuation = cloud.enabled ? cloudgen_step(dt) : 1;
+
     for (uint8_t i = 0; i < 4; i++)
     {
         struct output *o = &outputs[i];
-        if (o->mode_count == 0)
-            continue;
+        double intensity = 1.0;
 
-        // Increment mode phases
-        for (uint8_t j = 0; j < o->mode_count; j++)
+        if (o->type == Sinusoidal && o->mode_count > 0)
         {
-            struct mode *m = &o->modes[j];
-            m->phase += m->freq*dt;
-            while (m->phase > 1)
-                m->phase -= 1;
+            // Increment mode phases
+            for (uint8_t j = 0; j < o->mode_count; j++)
+            {
+                struct mode *m = &o->modes[j];
+                m->phase += m->freq*dt;
+                while (m->phase > 1)
+                    m->phase -= 1;
+            }
+
+            // Calculate new brightness
+            double mma = 0;
+            for (uint8_t j = 0; j < o->mode_count; j++)
+            {
+                struct mode *m = &o->modes[j];
+                mma += m->mma*sin(2*M_PI*m->phase);
+            }
+
+            intensity = (1 + mma/1000);
+        }
+        else if (o->type == Ramp)
+        {
+            o->accumulated += dt;
+
+            if (o->accumulated > o->period)
+                o->accumulated -= o->period;
+
+            intensity = o->accumulated / o->period;
+        }
+        else if (o->type == Gaussian)
+        {
+            o->accumulated += dt;
+
+            if (o->accumulated > o->period)
+                o->accumulated -= o->period;
+
+            double phase = o->accumulated / o->period;
+            intensity = 0;
+
+            for (uint8_t j = 0; j < o->mode_count; j++)
+            {
+                struct gaussian *p = &o->peaks[j];
+                double x = (phase - p->offset)/p->width;
+                intensity += p->amplitude * exp(-x*x);
+            }
         }
 
-        // Calculate new brightness
-        double mma = 0;
-        for (uint8_t j = 0; j < o->mode_count; j++)
-        {
-            struct mode *m = &o->modes[j];
-            mma += m->mma*sin(2*M_PI*m->phase);
-        }
+        if (o->cloudy)
+            intensity *= attenuation;
 
-        set_pwm_duty(i, (1 + mma/1000)*outputs[i].pwm_duty);
+        set_pwm_duty(i, intensity*outputs[i].pwm_duty);
     }
 }

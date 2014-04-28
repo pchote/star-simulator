@@ -7,7 +7,7 @@ LFUSE = 0xFF
 BOOTSTART    = 0x1E000
 
 AVRDUDE = avrdude -c dragon_jtag -P usb -p $(DEVICE)
-OBJECTS = main.o
+OBJECTS = main.o cloudgen.o
 
 BOOTLOADER   = avrdude -c avr109 -p $(DEVICE) -b 9600 -P $(PORT)
 BOOT_OBJECTS = bootloader.o

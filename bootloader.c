@@ -171,7 +171,7 @@ int main(void)
     initbootuart();
 
     // Exit bootloader if no data is recieved after ~1 second
-    wdt_enable(WDTO_500MS);
+    wdt_enable(WDTO_2S);
 
     for (;;)
     {
