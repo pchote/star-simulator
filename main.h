@@ -9,9 +9,11 @@
 #define LIGHTBOX_MAIN_H
 
 #include <stdbool.h>
+#include <stdint.h>
+#include "simulation.h"
 
-// Maximum number of pulsation modes per output
-#define MAX_MODES 20
+// Where the active configuration mode is stored
+#define MODE_EEPROM_OFFSET (uint8_t *)(0x00)
 
 enum current_value
 {
@@ -30,11 +32,20 @@ enum variability_type
     Ramp = 3
 };
 
-struct mode
+struct sinusoid
 {
     double freq;
     double mma;
     double phase;
+};
+
+// Maximum number of pulsation modes per output
+#define MAX_MODES 10
+
+struct sinusoid_variability
+{
+    uint8_t mode_count;
+    struct sinusoid modes[MAX_MODES];
 };
 
 struct gaussian
@@ -44,33 +55,36 @@ struct gaussian
     double width;
 };
 
+struct gaussian_variability
+{
+    uint8_t mode_count;
+    struct gaussian modes[MAX_MODES];
+    double period;
+    double accumulated;
+};
+
+struct ramp_variability
+{
+    double period;
+    double accumulated;
+};
+
 struct output
 {
     enum current_value current;
     double pwm_duty;
     bool cloudy;
+
     enum variability_type type;
-
-    // Used by sinusoidal and gaussian
-    uint8_t mode_count;
-
     union
     {
-        struct mode modes[MAX_MODES];
-        struct gaussian peaks[MAX_MODES];
+        struct sinusoid_variability sinusoid;
+        struct gaussian_variability gaussian;
+        struct ramp_variability ramp;
     };
-
-    // Used by gaussian and ramp
-    double period;
-    double accumulated;
-
-    volatile uint16_t *ocr;
-    volatile uint8_t *port;
-    uint8_t mask;
 };
 
-
-struct cloudparams
+struct cloudgen
 {
     bool enabled;
     double period;
@@ -78,6 +92,25 @@ struct cloudparams
     double min_intensity;
     double max_intensity;
     double initial_intensity;
+
+    double accumulated_time;
+    uint8_t start;
+
+    // A circular buffer of the 4 control points for catmull-rom spline interpolation
+    double points[4];
 };
+
+struct simulation_parameters
+{
+    const char *name;
+    const char *desc;
+    uint16_t exptime;
+    void (*initialize)(struct cloudgen *, struct output *);
+};
+
+extern uint8_t simulation_count;
+extern struct simulation_parameters simulation[];
+extern uint8_t active_simulation;
+void select_simulation(uint8_t simulation_type);
 
 #endif

@@ -5,12 +5,13 @@
 //  published by the Free Software Foundation and included in the LICENSE file.
 //*****************************************************************************
 
-#ifndef LIGHTBOX_CLOUDGEN_H
-#define LIGHTBOX_CLOUDGEN_H
+#ifndef LIGHTBOX_SIMULATION_H
+#define LIGHTBOX_SIMULATION_H
 
-#include "main.h"
-
-void cloudgen_init(struct cloudgen *cloud);
-double cloudgen_step(struct cloudgen *cloud, double dt);
+struct simulation_parameters simulation_beating();
+struct simulation_parameters simulation_ec20058_realtime();
+struct simulation_parameters simulation_ec20058_fast();
+struct simulation_parameters simulation_crab_pulsar_slow();
+struct simulation_parameters simulation_test_ramp();
 
 #endif

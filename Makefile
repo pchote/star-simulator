@@ -6,9 +6,10 @@ HFUSE = 0x09
 LFUSE = 0xFF
 
 AVRDUDE = avrdude -c dragon_jtag -P usb -p $(DEVICE)
-OBJECTS = main.o cloudgen.o
+OBJECTS = main.o cloudgen.o simulation.o usb.o
 
-COMPILE = avr-gcc -g -mmcu=$(DEVICE) -Wall -Wextra -Werror -Os -std=gnu99 -funsigned-bitfields -fshort-enums \
+#  -Wall -Wextra -Werror
+COMPILE = avr-gcc -g -mmcu=$(DEVICE) -Os -std=gnu99 -funsigned-bitfields -fshort-enums \
                   -DF_CPU=$(F_CPU)
 
 all: main.hex
@@ -35,7 +36,7 @@ debug: main.elf
 	$(COMPILE) -c $< -o $@
 
 main.elf: $(OBJECTS)
-	$(COMPILE) -o main.elf $(OBJECTS)
+	$(COMPILE) -o main.elf $(OBJECTS) -lm
 
 main.hex: main.elf
 	rm -f main.hex
