@@ -87,16 +87,17 @@ struct output
 struct cloudgen
 {
     bool enabled;
-    double period;
-    double velocity;
+    double min_period;
+    double max_period;
     double min_intensity;
     double max_intensity;
     double initial_intensity;
 
+    double next_period;
     double accumulated_time;
     uint8_t start;
 
-    // A circular buffer of the 4 control points for catmull-rom spline interpolation
+    // A circular buffer of the 4 control points for weighted-linear interpolation
     double points[4];
 };
 

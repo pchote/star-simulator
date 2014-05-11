@@ -45,8 +45,8 @@ void ec20058_realtime_init(struct cloudgen *cloud, struct output outputs[4])
 {
     *cloud = (struct cloudgen) {
         .enabled = true,
-        .period = 300,
-        .velocity = 0.05,
+        .min_period = 30,
+        .max_period = 300,
         .min_intensity = 0.5,
         .max_intensity = 1,
         .initial_intensity = 0.75
@@ -98,8 +98,8 @@ void ec20058_fast_init(struct cloudgen *cloud, struct output outputs[4])
 {
     *cloud = (struct cloudgen) {
         .enabled = true,
-        .period = 30,
-        .velocity = 0.05,
+        .min_period = 3,
+        .max_period = 30,
         .min_intensity = 0.5,
         .max_intensity = 1,
         .initial_intensity = 0.75
