@@ -10,7 +10,7 @@
 #include "main.h"
 
 static const char beating_name[] PROGMEM = "Beating test signal.";
-static const char beating_desc[] PROGMEM = "A simple sinusoidal test signal with component frequencies of 40 and 50 mHz.";
+static const char beating_desc[] PROGMEM = "Two sinusoids, with periods of 20 and 25 seconds.";
 static const uint16_t beating_exptime = 1000;
 static void beating_init(struct cloudgen *cloud, struct output outputs[4])
 {
@@ -219,7 +219,7 @@ struct simulation_parameters simulation_ec20058_fast_cloud()
 }
 
 static const char crab_pulsar_slow_name[] PROGMEM = "Crab pulsar simulation (100x slower).";
-static const char crab_pulsar_slow_desc[] PROGMEM = "Simulation of the Crab pulsar, which shows non-sinusoidal variability.";
+static const char crab_pulsar_slow_desc[] PROGMEM = "Simulation of the Crab pulsar, slowed to ~3s period.";
 static const uint16_t crab_pulsar_slow_exptime = 100;
 static void crab_pulsar_slow_init(struct cloudgen *cloud, struct output outputs[4])
 {
@@ -251,34 +251,34 @@ struct simulation_parameters simulation_crab_pulsar_slow()
 
 //  Linear ramp in each channel for calibrating intensities
 static const char test_ramp_name[] PROGMEM = "Ramp test signal.";
-static const char test_ramp_desc[] PROGMEM = "A simple test signal that linearly ramps the intensity with a 17 second period.";
+static const char test_ramp_desc[] PROGMEM = "Ramps output channels from 0 to max over 17 seconds.";
 static const uint16_t test_ramp_exptime = 100;
 static void test_ramp_init(struct cloudgen *cloud, struct output outputs[4])
 {
     outputs[0] = (struct output) {
         .current = c50uA,
-        .pwm_duty = 0.5,
+        .pwm_duty = 1.0,
         .type = Ramp,
         .ramp = { .period = 17 }
     };
 
     outputs[1] = (struct output) {
         .current = c50uA,
-        .pwm_duty = 0.5,
+        .pwm_duty = 1.0,
         .type = Ramp,
         .ramp = { .period = 17 }
     };
 
     outputs[2] = (struct output) {
         .current = c50uA,
-        .pwm_duty = 0.5,
+        .pwm_duty = 1.0,
         .type = Ramp,
         .ramp = { .period = 17 }
     };
 
     outputs[3] = (struct output) {
         .current = c50uA,
-        .pwm_duty = 0.5,
+        .pwm_duty = 1.0,
         .type = Ramp,
         .ramp = { .period = 17 }
     };

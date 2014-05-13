@@ -118,7 +118,7 @@ static void parse_packet(struct timer_packet *p)
             struct packet_simulation *sim = &p->data.simulation;
             printf("    %2hhu     %s\n", sim->id, sim->name);
             printf(" %s  %s\n", sim->id == config.active ? "(active)" : "        ", sim->desc);
-            printf("           Recommended exposure time: ~%gs\n", sim->exptime / 1000.0f);
+//            printf("           Recommended exposure time: ~%gs\n", sim->exptime / 1000.0f);
             printf("\n");
             break;
         }
