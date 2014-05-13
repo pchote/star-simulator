@@ -39,9 +39,46 @@ struct simulation_parameters simulation_beating()
 }
 
 static const char ec20058_realtime_name[] PROGMEM = "EC20058 simulation (real-time).";
-static const char ec20058_realtime_desc[] PROGMEM = "Simulation of the white dwarf EC20058 and a constant comparison star on a cloudy night.";
+static const char ec20058_realtime_desc[] PROGMEM = "Simulation of the white dwarf EC20058.";
 static const uint16_t ec20058_realtime_exptime = 20000;
 void ec20058_realtime_init(struct cloudgen *cloud, struct output outputs[4])
+{
+    outputs[2] = (struct output) {
+        .current = c5uA,
+        .pwm_duty = 0.5,
+        .cloudy = true,
+        .type = Sinusoidal,
+        .sinusoid = {
+            .mode_count = 9,
+            .modes = {
+                {1903.50e-6, 1.57, 0.95},
+                {2998.70e-6, 2.72, 0.97},
+                {3489.00e-6, 1.32, 0.15},
+                {3559.00e-6, 7.24, 0.99},
+                {3893.20e-6, 6.40, 0.34},
+                {4887.80e-6, 2.13, 0.44},
+                {4902.20e-6, 1.80, 0.19},
+                {5128.60e-6, 2.44, 0.99},
+                {7452.20e-6, 1.22, 0.17},
+            }
+        }
+    };
+}
+
+struct simulation_parameters simulation_ec20058_realtime()
+{
+    return (struct simulation_parameters) {
+        .name = ec20058_realtime_name,
+        .desc = ec20058_realtime_desc,
+        .exptime = ec20058_realtime_exptime,
+        .initialize = ec20058_realtime_init
+    };
+}
+
+static const char ec20058_realtime_cloud_name[] PROGMEM = "EC20058 simulation (cloudy; real-time).";
+static const char ec20058_realtime_cloud_desc[] PROGMEM = "EC20058 and a constant comparison star on a cloudy night.";
+static const uint16_t ec20058_realtime_cloud_exptime = 20000;
+void ec20058_realtime_cloud_init(struct cloudgen *cloud, struct output outputs[4])
 {
     *cloud = (struct cloudgen) {
         .enabled = true,
@@ -57,7 +94,7 @@ void ec20058_realtime_init(struct cloudgen *cloud, struct output outputs[4])
         .pwm_duty = 0.5,
         .cloudy = true,
         .type = Sinusoidal,
-        .sinusoid = {     
+        .sinusoid = {
             .mode_count = 9,
             .modes = {
                 {1903.50e-6, 1.57, 0.95},
@@ -81,20 +118,57 @@ void ec20058_realtime_init(struct cloudgen *cloud, struct output outputs[4])
     };
 }
 
-struct simulation_parameters simulation_ec20058_realtime()
+struct simulation_parameters simulation_ec20058_realtime_cloud()
 {
     return (struct simulation_parameters) {
-        .name = ec20058_realtime_name,
-        .desc = ec20058_realtime_desc,
-        .exptime = ec20058_realtime_exptime,
-        .initialize = ec20058_realtime_init
+        .name = ec20058_realtime_cloud_name,
+        .desc = ec20058_realtime_cloud_desc,
+        .exptime = ec20058_realtime_cloud_exptime,
+        .initialize = ec20058_realtime_cloud_init
     };
 }
 
 static const char ec20058_fast_name[] PROGMEM = "EC20058 simulation (10x faster).";
-static const char ec20058_fast_desc[] PROGMEM = "Simulation of the white dwarf EC20058 and a constant comparison star on a cloudy night.";
+static const char ec20058_fast_desc[] PROGMEM = "Simulation of the white dwarf EC20058 with accelerated time.";
 static const uint16_t ec20058_fast_exptime = 2000;
 void ec20058_fast_init(struct cloudgen *cloud, struct output outputs[4])
+{
+    outputs[2] = (struct output) {
+        .current = c50uA,
+        .pwm_duty = 0.5,
+        .cloudy = true,
+        .type = Sinusoidal,
+        .sinusoid = {
+            .mode_count = 9,
+            .modes = {
+                {1903.50e-5, 1.57, 0.95},
+                {2998.70e-5, 2.72, 0.97},
+                {3489.00e-5, 1.32, 0.15},
+                {3559.00e-5, 7.24, 0.99},
+                {3893.20e-5, 6.40, 0.34},
+                {4887.80e-5, 2.13, 0.44},
+                {4902.20e-5, 1.80, 0.19},
+                {5128.60e-5, 2.44, 0.99},
+                {7452.20e-5, 1.22, 0.17},
+            }
+        }
+    };
+}
+
+struct simulation_parameters simulation_ec20058_fast()
+{
+    return (struct simulation_parameters) {
+        .name = ec20058_fast_name,
+        .desc = ec20058_fast_desc,
+        .exptime = ec20058_fast_exptime,
+        .initialize = ec20058_fast_init
+    };
+}
+
+static const char ec20058_fast_cloud_name[] PROGMEM = "EC20058 simulation (cloudy; 10x faster).";
+static const char ec20058_fast_cloud_desc[] PROGMEM = "EC20058 and a constant comparison star on a cloudy night.";
+static const uint16_t ec20058_fast_cloud_exptime = 2000;
+void ec20058_fast_cloud_init(struct cloudgen *cloud, struct output outputs[4])
 {
     *cloud = (struct cloudgen) {
         .enabled = true,
@@ -110,7 +184,7 @@ void ec20058_fast_init(struct cloudgen *cloud, struct output outputs[4])
         .pwm_duty = 0.5,
         .cloudy = true,
         .type = Sinusoidal,
-        .sinusoid = {     
+        .sinusoid = {
             .mode_count = 9,
             .modes = {
                 {1903.50e-5, 1.57, 0.95},
@@ -134,13 +208,13 @@ void ec20058_fast_init(struct cloudgen *cloud, struct output outputs[4])
     };
 }
 
-struct simulation_parameters simulation_ec20058_fast()
+struct simulation_parameters simulation_ec20058_fast_cloud()
 {
     return (struct simulation_parameters) {
-        .name = ec20058_fast_name,
-        .desc = ec20058_fast_desc,
-        .exptime = ec20058_fast_exptime,
-        .initialize = ec20058_fast_init
+        .name = ec20058_fast_cloud_name,
+        .desc = ec20058_fast_cloud_desc,
+        .exptime = ec20058_fast_cloud_exptime,
+        .initialize = ec20058_fast_cloud_init
     };
 }
 

@@ -109,7 +109,7 @@ struct simulation_parameters
     void (*initialize)(struct cloudgen *, struct output *);
 };
 
-extern uint8_t simulation_count;
+extern const uint8_t simulation_count;
 extern struct simulation_parameters simulation[];
 extern uint8_t active_simulation;
 void select_simulation(uint8_t simulation_type);

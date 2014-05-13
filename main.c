@@ -36,8 +36,8 @@ static struct output outputs[4];
 static struct cloudgen cloud;
 
 // Simulation types
-uint8_t simulation_count = 5;
-struct simulation_parameters simulation[5];
+const uint8_t simulation_count = 7;
+struct simulation_parameters simulation[7];
 uint8_t active_simulation = 0;
 
 static void channel_set_duty(uint8_t i, double duty)
@@ -79,9 +79,11 @@ int main(void)
 
     simulation[0] = simulation_beating();
     simulation[1] = simulation_ec20058_realtime();
-    simulation[2] = simulation_ec20058_fast();
-    simulation[3] = simulation_crab_pulsar_slow();
-    simulation[4] = simulation_test_ramp();
+    simulation[2] = simulation_ec20058_realtime_cloud();
+    simulation[3] = simulation_ec20058_fast();
+    simulation[4] = simulation_ec20058_fast_cloud();
+    simulation[5] = simulation_crab_pulsar_slow();
+    simulation[6] = simulation_test_ramp();
 
     // Initialize other components
     usb_initialize();
