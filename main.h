@@ -12,6 +12,9 @@
 #include <stdint.h>
 #include "simulation.h"
 
+// Number of output channels
+#define CHANNEL_COUNT 2
+
 // Where the active configuration mode is stored
 #define MODE_EEPROM_OFFSET (uint8_t *)(0x00)
 
@@ -106,6 +109,7 @@ struct simulation_parameters
     const char *name;
     const char *desc;
     uint16_t exptime;
+    bool external;
     void (*initialize)(struct cloudgen *, struct output *);
 };
 

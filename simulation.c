@@ -12,9 +12,14 @@
 static const char beating_name[] PROGMEM = "Beating test signal.";
 static const char beating_desc[] PROGMEM = "Two sinusoids, with periods of 20 and 25 seconds.";
 static const uint16_t beating_exptime = 1000;
-static void beating_init(struct cloudgen *cloud, struct output outputs[4])
+static const bool beating_external = true;
+static void beating_init(struct cloudgen *cloud, struct output outputs[CHANNEL_COUNT])
 {
-    outputs[2] = (struct output) {
+    *cloud = (struct cloudgen) {
+        .enabled = false
+    };
+
+    outputs[0] = (struct output) {
         .current = c50uA,
         .pwm_duty = 0.5,
         .type = Sinusoidal,
@@ -26,6 +31,19 @@ static void beating_init(struct cloudgen *cloud, struct output outputs[4])
             }
         }
     };
+
+    outputs[1] = (struct output) {
+        .current = c5mA,
+        .pwm_duty = 0.5,
+        .type = Sinusoidal,
+        .sinusoid = {
+            .mode_count = 2,
+            .modes = {
+                {0.05, 600, 0},
+                {0.04, 300, 0.5},
+            }
+        }
+    };
 }
 
 struct simulation_parameters simulation_beating()
@@ -34,6 +52,7 @@ struct simulation_parameters simulation_beating()
         .name = beating_name,
         .desc = beating_desc,
         .exptime = beating_exptime,
+        .external = beating_external,
         .initialize = beating_init
     };
 }
@@ -41,9 +60,10 @@ struct simulation_parameters simulation_beating()
 static const char ec20058_realtime_name[] PROGMEM = "EC20058 simulation (real-time).";
 static const char ec20058_realtime_desc[] PROGMEM = "Simulation of the white dwarf EC20058.";
 static const uint16_t ec20058_realtime_exptime = 20000;
-void ec20058_realtime_init(struct cloudgen *cloud, struct output outputs[4])
+static const bool ec20058_realtime_external = false;
+void ec20058_realtime_init(struct cloudgen *cloud, struct output outputs[CHANNEL_COUNT])
 {
-    outputs[2] = (struct output) {
+    outputs[0] = (struct output) {
         .current = c5uA,
         .pwm_duty = 0.5,
         .cloudy = true,
@@ -71,6 +91,7 @@ struct simulation_parameters simulation_ec20058_realtime()
         .name = ec20058_realtime_name,
         .desc = ec20058_realtime_desc,
         .exptime = ec20058_realtime_exptime,
+        .external = ec20058_realtime_external,
         .initialize = ec20058_realtime_init
     };
 }
@@ -78,7 +99,8 @@ struct simulation_parameters simulation_ec20058_realtime()
 static const char ec20058_realtime_cloud_name[] PROGMEM = "EC20058 simulation (cloudy; real-time).";
 static const char ec20058_realtime_cloud_desc[] PROGMEM = "EC20058 and a constant comparison star on a cloudy night.";
 static const uint16_t ec20058_realtime_cloud_exptime = 20000;
-void ec20058_realtime_cloud_init(struct cloudgen *cloud, struct output outputs[4])
+static const bool ec20058_realtime_cloud_external = false;
+void ec20058_realtime_cloud_init(struct cloudgen *cloud, struct output outputs[CHANNEL_COUNT])
 {
     *cloud = (struct cloudgen) {
         .enabled = true,
@@ -89,7 +111,7 @@ void ec20058_realtime_cloud_init(struct cloudgen *cloud, struct output outputs[4
         .initial_intensity = 0.75
     };
 
-    outputs[2] = (struct output) {
+    outputs[0] = (struct output) {
         .current = c5uA,
         .pwm_duty = 0.5,
         .cloudy = true,
@@ -110,7 +132,7 @@ void ec20058_realtime_cloud_init(struct cloudgen *cloud, struct output outputs[4
         }
     };
 
-    outputs[3] = (struct output) {
+    outputs[1] = (struct output) {
         .current = c5uA,
         .pwm_duty = 0.8,
         .type = Constant,
@@ -124,6 +146,7 @@ struct simulation_parameters simulation_ec20058_realtime_cloud()
         .name = ec20058_realtime_cloud_name,
         .desc = ec20058_realtime_cloud_desc,
         .exptime = ec20058_realtime_cloud_exptime,
+        .external = ec20058_realtime_cloud_external,
         .initialize = ec20058_realtime_cloud_init
     };
 }
@@ -131,9 +154,10 @@ struct simulation_parameters simulation_ec20058_realtime_cloud()
 static const char ec20058_fast_name[] PROGMEM = "EC20058 simulation (10x faster).";
 static const char ec20058_fast_desc[] PROGMEM = "Simulation of the white dwarf EC20058 with accelerated time.";
 static const uint16_t ec20058_fast_exptime = 2000;
-void ec20058_fast_init(struct cloudgen *cloud, struct output outputs[4])
+static const bool ec20058_fast_external = false;
+void ec20058_fast_init(struct cloudgen *cloud, struct output outputs[CHANNEL_COUNT])
 {
-    outputs[2] = (struct output) {
+    outputs[0] = (struct output) {
         .current = c50uA,
         .pwm_duty = 0.5,
         .cloudy = true,
@@ -161,6 +185,7 @@ struct simulation_parameters simulation_ec20058_fast()
         .name = ec20058_fast_name,
         .desc = ec20058_fast_desc,
         .exptime = ec20058_fast_exptime,
+        .external = ec20058_fast_external,
         .initialize = ec20058_fast_init
     };
 }
@@ -168,7 +193,8 @@ struct simulation_parameters simulation_ec20058_fast()
 static const char ec20058_fast_cloud_name[] PROGMEM = "EC20058 simulation (cloudy; 10x faster).";
 static const char ec20058_fast_cloud_desc[] PROGMEM = "EC20058 and a constant comparison star on a cloudy night.";
 static const uint16_t ec20058_fast_cloud_exptime = 2000;
-void ec20058_fast_cloud_init(struct cloudgen *cloud, struct output outputs[4])
+static const bool ec20058_fast_cloud_external = false;
+void ec20058_fast_cloud_init(struct cloudgen *cloud, struct output outputs[CHANNEL_COUNT])
 {
     *cloud = (struct cloudgen) {
         .enabled = true,
@@ -179,7 +205,7 @@ void ec20058_fast_cloud_init(struct cloudgen *cloud, struct output outputs[4])
         .initial_intensity = 0.75
     };
 
-    outputs[2] = (struct output) {
+    outputs[0] = (struct output) {
         .current = c50uA,
         .pwm_duty = 0.5,
         .cloudy = true,
@@ -200,7 +226,7 @@ void ec20058_fast_cloud_init(struct cloudgen *cloud, struct output outputs[4])
         }
     };
 
-    outputs[3] = (struct output) {
+    outputs[1] = (struct output) {
         .current = c50uA,
         .pwm_duty = 0.8,
         .type = Constant,
@@ -214,6 +240,7 @@ struct simulation_parameters simulation_ec20058_fast_cloud()
         .name = ec20058_fast_cloud_name,
         .desc = ec20058_fast_cloud_desc,
         .exptime = ec20058_fast_cloud_exptime,
+        .external = ec20058_fast_cloud_external,
         .initialize = ec20058_fast_cloud_init
     };
 }
@@ -221,10 +248,26 @@ struct simulation_parameters simulation_ec20058_fast_cloud()
 static const char crab_pulsar_slow_name[] PROGMEM = "Crab pulsar simulation (100x slower).";
 static const char crab_pulsar_slow_desc[] PROGMEM = "Simulation of the Crab pulsar, slowed to ~3s period.";
 static const uint16_t crab_pulsar_slow_exptime = 100;
-static void crab_pulsar_slow_init(struct cloudgen *cloud, struct output outputs[4])
+static const bool crab_pulsar_external = true;
+static void crab_pulsar_slow_init(struct cloudgen *cloud, struct output outputs[CHANNEL_COUNT])
 {
-    outputs[2] = (struct output) {
+    outputs[0] = (struct output) {
         .current = c50uA,
+        .pwm_duty = 0.9,
+        .cloudy = false,
+        .type = Gaussian,
+        .gaussian = {
+            .period = 3.3689,
+            .mode_count = 2,
+            .modes = {
+                {1.038, 0.2438, 0.07566},
+                {0.3866, 0.6668, 0.1018},
+            }
+        }
+    };
+
+    outputs[1] = (struct output) {
+        .current = c5mA,
         .pwm_duty = 0.9,
         .cloudy = false,
         .type = Gaussian,
@@ -245,6 +288,7 @@ struct simulation_parameters simulation_crab_pulsar_slow()
         .name = crab_pulsar_slow_name,
         .desc = crab_pulsar_slow_desc,
         .exptime = crab_pulsar_slow_exptime,
+        .external = crab_pulsar_external,
         .initialize = crab_pulsar_slow_init
     };
 }
@@ -252,32 +296,19 @@ struct simulation_parameters simulation_crab_pulsar_slow()
 //  Linear ramp in each channel for calibrating intensities
 static const char test_ramp_name[] PROGMEM = "Ramp test signal.";
 static const char test_ramp_desc[] PROGMEM = "Ramps output channels from 0 to max over 17 seconds.";
-static const uint16_t test_ramp_exptime = 100;
-static void test_ramp_init(struct cloudgen *cloud, struct output outputs[4])
+static const uint16_t test_ramp_exptime = 500;
+static const bool test_ramp_external = true;
+static void test_ramp_init(struct cloudgen *cloud, struct output outputs[CHANNEL_COUNT])
 {
     outputs[0] = (struct output) {
         .current = c50uA,
-        .pwm_duty = 1.0,
+        .pwm_duty = 0.2,
         .type = Ramp,
         .ramp = { .period = 17 }
     };
 
     outputs[1] = (struct output) {
-        .current = c50uA,
-        .pwm_duty = 1.0,
-        .type = Ramp,
-        .ramp = { .period = 17 }
-    };
-
-    outputs[2] = (struct output) {
-        .current = c50uA,
-        .pwm_duty = 1.0,
-        .type = Ramp,
-        .ramp = { .period = 17 }
-    };
-
-    outputs[3] = (struct output) {
-        .current = c50uA,
+        .current = c5mA,
         .pwm_duty = 1.0,
         .type = Ramp,
         .ramp = { .period = 17 }
@@ -290,6 +321,38 @@ struct simulation_parameters simulation_test_ramp()
         .name = test_ramp_name,
         .desc = test_ramp_desc,
         .exptime = test_ramp_exptime,
+        .external = test_ramp_external,
         .initialize = test_ramp_init
+    };
+}
+
+//  Linear ramp in each channel for calibrating intensities
+static const char constant_name[] PROGMEM = "Constant intensity test signal.";
+static const char constant_desc[] PROGMEM = "LEDs with constant brightness.";
+static const uint16_t constant_exptime = 500;
+static const bool constant_external = false;
+static void constant_init(struct cloudgen *cloud, struct output outputs[CHANNEL_COUNT])
+{
+    outputs[0] = (struct output) {
+        .current = c50uA,
+        .pwm_duty = 0.2,
+        .type = Constant,
+    };
+
+    outputs[1] = (struct output) {
+        .current = c50uA,
+        .pwm_duty = 0.1,
+        .type = Constant,
+    };
+}
+
+struct simulation_parameters simulation_constant()
+{
+    return (struct simulation_parameters) {
+        .name = constant_name,
+        .desc = constant_desc,
+        .exptime = constant_exptime,
+        .external = constant_external,
+        .initialize = constant_init
     };
 }

@@ -29,15 +29,15 @@ struct channel
 };
 
 // Hardware outputs
-struct channel channels[4];
+struct channel channels[CHANNEL_COUNT];
 
 // Simulation output
-static struct output outputs[4];
+static struct output outputs[CHANNEL_COUNT];
 static struct cloudgen cloud;
 
 // Simulation types
-const uint8_t simulation_count = 7;
-struct simulation_parameters simulation[7];
+const uint8_t simulation_count = 8;
+struct simulation_parameters simulation[8];
 uint8_t active_simulation = 0;
 
 static void channel_set_duty(uint8_t i, double duty)
@@ -55,35 +55,29 @@ static void channel_set_current(uint8_t i, uint8_t state)
 int main(void)
 {
     // Initialize output channels
-    // Use 10-bit PWM on timer1,3 to control two channels each
+    channels[0] = (struct channel){ .ocr = &OCR1B, .port = &PORTC, .mask = 0x0F };
+    channels[1] = (struct channel){ .ocr = &OCR1A, .port = &PORTD, .mask = 0xF0 };
+    DDRB = 0x01;
+    DDRC = 0x0F;
+    DDRD = 0xF0;
+
+    // Use 10-bit PWM on timer1 to control two channels
     TCCR1A |= _BV(WGM10) | _BV(WGM11) | _BV(COM1A1) | _BV(COM1B1);
     TCCR1B |= _BV(WGM12) | _BV(CS11) | _BV(CS10);
-    DDRB |= _BV(PB5) | _BV(PB6);
-
-    TCCR3A |= _BV(WGM30) | _BV(WGM31) | _BV(COM3A1) | _BV(COM3B1);
-    TCCR3B |= _BV(WGM32) | _BV(CS31) | _BV(CS30);
-    DDRE |= _BV(PE3) | _BV(PE4);
-
-    // Set all pins to output
-    DDRA = 0xFF;
-    DDRD = 0xFF;
-
-    channels[0] = (struct channel){ .ocr = &OCR3A, .port = &PORTA, .mask = 0x0F };
-    channels[1] = (struct channel){ .ocr = &OCR3B, .port = &PORTA, .mask = 0xF0 };
-    channels[2] = (struct channel){ .ocr = &OCR1B, .port = &PORTD, .mask = 0xF0 };
-    channels[3] = (struct channel){ .ocr = &OCR1A, .port = &PORTD, .mask = 0x0F };
+    DDRB = 0x07;
 
     // Configure timer0 with 64us ticks to update the output channels every 16ms
-    TCCR0 = _BV(CS02) | _BV(CS01) | _BV(CS00);
-    TIMSK |= _BV(TOIE0);
+    TCCR0B = _BV(CS02) | _BV(CS00);
+    TIMSK0 |= _BV(TOIE0);
 
-    simulation[0] = simulation_beating();
-    simulation[1] = simulation_ec20058_realtime();
-    simulation[2] = simulation_ec20058_realtime_cloud();
-    simulation[3] = simulation_ec20058_fast();
-    simulation[4] = simulation_ec20058_fast_cloud();
-    simulation[5] = simulation_crab_pulsar_slow();
-    simulation[6] = simulation_test_ramp();
+    simulation[0] = simulation_constant();
+    simulation[1] = simulation_test_ramp();
+    simulation[2] = simulation_beating();
+    simulation[3] = simulation_ec20058_realtime();
+    simulation[4] = simulation_ec20058_realtime_cloud();
+    simulation[5] = simulation_ec20058_fast();
+    simulation[6] = simulation_ec20058_fast_cloud();
+    simulation[7] = simulation_crab_pulsar_slow();
 
     // Initialize other components
     usb_initialize();
@@ -181,9 +175,13 @@ void select_simulation(uint8_t simulation_type)
     // Load new parameters
     (simulation[simulation_type-1].initialize)(&cloud, outputs);
 
+    // Set internal/external LED
+    if (!simulation[simulation_type-1].external)
+        PORTB |= 0x01;
+
     // Initialize simulation
     cloudgen_init(&cloud);
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < CHANNEL_COUNT; i++)
     {
         channel_set_current(i, outputs[i].current);
         channel_set_duty(i, outputs[i].pwm_duty);
@@ -203,7 +201,7 @@ ISR(TIMER0_OVF_vect)
     double attenuation = cloudgen_step(&cloud, dt);
 
     // Update the four output channels
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < CHANNEL_COUNT; i++)
     {
         double intensity = tick_output(&outputs[i], dt);
 

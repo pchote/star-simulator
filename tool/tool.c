@@ -110,7 +110,7 @@ static void parse_packet(struct timer_packet *p)
         {
             // TODO: only display if debug mode is active
             p->data.message.str[p->data.message.length] = '\0';
-            //printf("Debug message: %s\n", p->data.message.str);
+            // printf("Debug message: %s\n", p->data.message.str);
             break;
         }
         case SIMULATION_TYPE:
@@ -118,7 +118,7 @@ static void parse_packet(struct timer_packet *p)
             struct packet_simulation *sim = &p->data.simulation;
             printf("    %2hhu     %s\n", sim->id, sim->name);
             printf(" %s  %s\n", sim->id == config.active ? "(active)" : "        ", sim->desc);
-//            printf("           Recommended exposure time: ~%gs\n", sim->exptime / 1000.0f);
+            printf("           Recommended exposure time: ~%gs\n", sim->exptime / 1000.0f);
             printf("\n");
             break;
         }
@@ -169,6 +169,12 @@ static int send_data(struct serial_port *port, uint8_t type, const void *data, u
 
     free(packet);
     return error < 0 ? 1 : 0;
+}
+
+void clear_buffer(struct serial_port *port)
+{
+    uint8_t b;
+    while (serial_read(port, &b, 1));
 }
 
 int query_response(struct serial_port *port)
@@ -289,6 +295,9 @@ int main(int argc, char *argv[])
 		getchar();
 		return 1;
     }
+
+    millisleep(2000);
+    clear_buffer(port);
 
     if (send_data(port, REQUEST_MODES, NULL, 0))
         goto error;

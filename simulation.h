@@ -15,5 +15,6 @@ struct simulation_parameters simulation_ec20058_fast();
 struct simulation_parameters simulation_ec20058_fast_cloud();
 struct simulation_parameters simulation_crab_pulsar_slow();
 struct simulation_parameters simulation_test_ramp();
+struct simulation_parameters simulation_constant();
 
 #endif

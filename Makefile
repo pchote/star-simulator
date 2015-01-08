@@ -1,11 +1,7 @@
-PORT      := /dev/tty.usbserial-*
-
-DEVICE = atmega128
+DEVICE = atmega328p
 F_CPU = 16000000UL
-HFUSE = 0x09
-LFUSE = 0xFF
 
-AVRDUDE = avrdude -c dragon_jtag -P usb -p $(DEVICE)
+AVRDUDE = avrdude -c arduino -P /dev/tty.usbmodem* -p $(DEVICE)
 OBJECTS = main.o cloudgen.o simulation.o usb.o
 
 #  -Wall -Wextra -Werror
@@ -13,9 +9,6 @@ COMPILE = avr-gcc -g -mmcu=$(DEVICE) -Os -std=gnu99 -funsigned-bitfields -fshort
                   -DF_CPU=$(F_CPU)
 
 all: main.hex
-
-fuse:
-	$(AVRDUDE) -U hfuse:w:$(HFUSE):m -U lfuse:w:$(LFUSE):m efuse:w:0xFF:m
 
 install: main.hex
 	$(AVRDUDE) -U flash:w:main.hex:i

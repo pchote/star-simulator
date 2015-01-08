@@ -55,7 +55,7 @@ void cloudgen_init(struct cloudgen *cloud)
     ADMUX |= _BV(ADLAR) | _BV(REFS1) | _BV(MUX3) | _BV(MUX0);
 
     // Enable ADC; enable free running mode; enable interrupt; start measuring
-    ADCSRA |= _BV(ADEN)|_BV(ADFR)|_BV(ADIE)|_BV(ADSC);
+    ADCSRA |= _BV(ADEN)|_BV(ADATE)|_BV(ADIE)|_BV(ADSC);
 }
 
 double cloudgen_step(struct cloudgen *cloud, double dt)

@@ -143,7 +143,7 @@ static uint8_t read_byte()
     return input_buffer[input_read++];
 }
 
-ISR(USART0_UDRE_vect)
+ISR(USART_UDRE_vect)
 {
     if (output_write != output_read)
         UDR0 = output_buffer[output_read++];
@@ -153,7 +153,7 @@ ISR(USART0_UDRE_vect)
         UCSR0B &= ~_BV(UDRIE0);
 }
 
-ISR(USART0_RX_vect)
+ISR(USART_RX_vect)
 {
     input_buffer[(uint8_t)(input_write++)] = UDR0;
 }
