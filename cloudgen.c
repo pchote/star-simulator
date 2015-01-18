@@ -72,8 +72,8 @@ double cloudgen_step(struct cloudgen *cloud, double dt)
         // Generate new control point value
         double next = lerp(cloud->min_intensity, cloud->max_intensity, rand_value, UINT16_MAX);
 
-        // Heavily weight the previous points
-        cloud->points[cloud->start] = (2 * cloud->points[wrap(cloud->start + 1)] + 2 * cloud->points[wrap(cloud->start + 2)] + 2 * cloud->points[wrap(cloud->start + 3)] + next) / 7;
+        // Weight heavily towards the previous point
+        cloud->points[cloud->start] = (2 * cloud->points[wrap(cloud->start + 3)] + next) / 3;
 
         // Increment control point
         cloud->start = wrap(cloud->start + 1);
@@ -83,10 +83,11 @@ double cloudgen_step(struct cloudgen *cloud, double dt)
     }
 
     // Evaluate the catmull-rom spline
+    double t = cloud->accumulated_time / cloud->next_period;
     double p0 = cloud->points[wrap(cloud->start + 0)];
     double p1 = cloud->points[wrap(cloud->start + 1)];
     double p2 = cloud->points[wrap(cloud->start + 2)];
     double p3 = cloud->points[wrap(cloud->start + 3)];
 
-    return lerp(p0 + p1, p2 + p3, cloud->accumulated_time, cloud->next_period) / 2;
+    return p1 + 0.5f*t*(p2 - p0 + t*((2*p0 - 5*p1 + 4*p2 - p3) + t*(3*p1 - 3*p2 + p3 - p0)));
 }
