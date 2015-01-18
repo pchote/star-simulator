@@ -325,6 +325,11 @@ int main(int argc, char *argv[])
     if (query_response(port) != 0)
         goto error;
 
+    // Force a reset to load new profile
+    serial_set_dtr(port, true);
+    millisleep(100);
+    serial_set_dtr(port, false);
+
 error:
     printf("\n[Press enter to exit]\n");
     getchar();
