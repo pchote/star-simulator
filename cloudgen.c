@@ -9,12 +9,12 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
 #include <math.h>
 #include "cloudgen.h"
 #include "main.h"
 
 static uint16_t rand_value;
-static uint8_t random_write_bit;
 
 static double lerp(double a, double b, double numerator, double denominator)
 {
@@ -32,13 +32,16 @@ static int8_t wrap(int8_t i)
     return i;
 }
 
-ISR(ADC_vect)
+ISR(WDT_vect)
 {
-    // The random number is updated every XXX ms by setting successive
-    // bits based on the relative voltage of the floating ADC0 and ADC1 inputs.
-    rand_value ^= (ADCH > 128 ? 1 : 0) << random_write_bit;
-    if (random_write_bit++ == 16)
-        random_write_bit = 0;
+    uint8_t rnd = TCNT2;
+
+    // Rotate the existing value a random number of places
+    uint8_t shift = rnd & 0x0F;    
+    rand_value = (rand_value << shift) | (rand_value >> 16 - shift);
+
+    // Mix with the counter value
+    rand_value ^= rnd;
 }
 
 // Initialize first four parameters
@@ -47,15 +50,14 @@ void cloudgen_init(struct cloudgen *cloud)
     for (uint8_t i = 0; i < 4; i++)
         cloud->points[i] = cloud->initial_intensity;
 
-    // Enable ADC for random number generation
-    // Set sample rate to 125khz
-    ADCSRA |= _BV(ADPS2)|_BV(ADPS1)|_BV(ADPS0);
-
-    // Left-align output in ADCH, enable AVCC, do a high-gain differential measurement
-    ADMUX |= _BV(ADLAR) | _BV(REFS1) | _BV(MUX3) | _BV(MUX0);
-
-    // Enable ADC; enable free running mode; enable interrupt; start measuring
-    ADCSRA |= _BV(ADEN)|_BV(ADATE)|_BV(ADIE)|_BV(ADSC);
+    // Use the watchdog timer to trigger an interrupt every 16ms.
+    // This interval is measured using a separate oscillator to the main clock
+    // and so we can use the relative clock skew (via timer2) to generate a
+    // random bit.
+    MCUSR = 0;
+    WDTCSR |= _BV(WDCE) | _BV(WDE);
+    WDTCSR = _BV(WDIE);
+    TCCR2B = _BV(CS20);
 }
 
 double cloudgen_step(struct cloudgen *cloud, double dt)
